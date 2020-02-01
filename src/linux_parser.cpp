@@ -112,16 +112,29 @@ public:
         string key;
         string value;
 
+        cpu_usage = vector<int>(cpu_col_num, 0);
+
         std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kStatFilename);
         if (filestream.is_open()) {
             while (std::getline(filestream, line)) {
                 std::replace(line.begin(), line.end(), ':', ' ');
                 std::istringstream linestream(line);
-                while (linestream >> key >> value) {
+                while (linestream >> key) {
                     if (key == "processes") {
+                        linestream >> value;
                         total_processes = stoi(value);
+                        break;
                     } else if (key == "procs_running") {
+                        linestream >> value;
                         running_processes = stoi(value);
+                        break;
+                    } else if (key == "cpu") {
+                        for (int i = 0; i < cpu_col_num; i++) {
+                            linestream >> value;
+                            cpu_usage[i] = stoi(value);
+                        }
+                        calculate_cpu_usage();
+                        break;
                     }
                 }
             }
@@ -132,6 +145,31 @@ public:
 
     int total_processes = 0;
     int running_processes = 0;
+    int Idle = 0;
+    int NonIdle = 0;
+    int Total = 0;
+
+
+    void calculate_cpu_usage() {
+        int user = cpu_usage[0];
+        int nice = cpu_usage[1];
+        int system = cpu_usage[2];
+        int idle = cpu_usage[3];
+        int iowait = cpu_usage[4];
+        int irq = cpu_usage[5];
+        int softirq = cpu_usage[6];
+        int steal = cpu_usage[7];
+        int guest = cpu_usage[8];
+        int guest_nice = cpu_usage[9];
+
+        Idle = idle + iowait;
+        NonIdle = user + nice + system + irq + softirq + steal;
+        Total = Idle + NonIdle;
+    }
+
+private:
+    const size_t cpu_col_num = 10;
+    std::vector<int> cpu_usage;
 
 
 };
@@ -151,7 +189,23 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+//vector<string> LinuxParser::CpuUtilization() { return {}; }
+
+#include <chrono>
+#include <thread>
+
+float LinuxParser::CpuUtilization() {
+    ProcStatParser prev_prc;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ProcStatParser current_prc;
+
+    int totald = current_prc.Total - prev_prc.Total;
+    int idled = current_prc.Idle - prev_prc.Idle;
+
+    return float(totald - idled) / float(totald);
+}
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
