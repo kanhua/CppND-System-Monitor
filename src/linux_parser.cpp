@@ -9,68 +9,133 @@ using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+using LinuxParser::kProcDirectory;
+using LinuxParser::kStatFilename;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
-  string line;
-  string key;
-  string value;
-  std::ifstream filestream(kOSPath);
-  if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {
-      std::replace(line.begin(), line.end(), ' ', '_');
-      std::replace(line.begin(), line.end(), '=', ' ');
-      std::replace(line.begin(), line.end(), '"', ' ');
-      std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "PRETTY_NAME") {
-          std::replace(value.begin(), value.end(), '_', ' ');
-          return value;
+    string line;
+    string key;
+    string value;
+    std::ifstream filestream(kOSPath);
+    if (filestream.is_open()) {
+        while (std::getline(filestream, line)) {
+            std::replace(line.begin(), line.end(), ' ', '_');
+            std::replace(line.begin(), line.end(), '=', ' ');
+            std::replace(line.begin(), line.end(), '"', ' ');
+            std::istringstream linestream(line);
+            while (linestream >> key >> value) {
+                if (key == "PRETTY_NAME") {
+                    std::replace(value.begin(), value.end(), '_', ' ');
+                    return value;
+                }
+            }
         }
-      }
     }
-  }
-  return value;
+    return value;
 }
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
-  string os, version,kernel;
-  string line;
-  std::ifstream stream(kProcDirectory + kVersionFilename);
-  if (stream.is_open()) {
-    std::getline(stream, line);
-    std::istringstream linestream(line);
-    linestream >> os >> version >>kernel;
-  }
-  return kernel;
+    string os, version, kernel;
+    string line;
+    std::ifstream stream(kProcDirectory + kVersionFilename);
+    if (stream.is_open()) {
+        std::getline(stream, line);
+        std::istringstream linestream(line);
+        linestream >> os >> version >> kernel;
+    }
+    return kernel;
 }
 
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
-  vector<int> pids;
-  DIR* directory = opendir(kProcDirectory.c_str());
-  struct dirent* file;
-  while ((file = readdir(directory)) != nullptr) {
-    // Is this a directory?
-    if (file->d_type == DT_DIR) {
-      // Is every character of the name a digit?
-      string filename(file->d_name);
-      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
-        pids.push_back(pid);
-      }
+    vector<int> pids;
+    DIR *directory = opendir(kProcDirectory.c_str());
+    struct dirent *file;
+    while ((file = readdir(directory)) != nullptr) {
+        // Is this a directory?
+        if (file->d_type == DT_DIR) {
+            // Is every character of the name a digit?
+            string filename(file->d_name);
+            if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+                int pid = stoi(filename);
+                pids.push_back(pid);
+            }
+        }
     }
-  }
-  closedir(directory);
-  return pids;
+    closedir(directory);
+    return pids;
 }
 
-// TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() {
+    string line;
+    string key;
+    string value;
 
-// TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+    float memtotal = 0.0;
+    float memfree = 0.0;
+    std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+    if (filestream.is_open()) {
+        while (std::getline(filestream, line)) {
+            std::replace(line.begin(), line.end(), ':', ' ');
+            std::istringstream linestream(line);
+            while (linestream >> key >> value) {
+                if (key == "MemTotal") {
+                    memtotal = stof(value);
+                } else if (key == "MemFree") {
+                    memfree = stof(value);
+                }
+            }
+        }
+    }
+    return 1.0 - memfree / memtotal;
+
+}
+
+long LinuxParser::UpTime() {
+    string line, uptime;
+    std::ifstream stream(kProcDirectory + kUptimeFilename);
+    if (stream.is_open()) {
+        std::getline(stream, line);
+        std::istringstream linestream(line);
+        linestream >> uptime;
+    }
+    return stol(uptime);
+
+}
+
+class ProcStatParser {
+public:
+    ProcStatParser() {
+        string line;
+        string key;
+        string value;
+
+        std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kStatFilename);
+        if (filestream.is_open()) {
+            while (std::getline(filestream, line)) {
+                std::replace(line.begin(), line.end(), ':', ' ');
+                std::istringstream linestream(line);
+                while (linestream >> key >> value) {
+                    if (key == "processes") {
+                        total_processes = stoi(value);
+                    } else if (key == "procs_running") {
+                        running_processes = stoi(value);
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    int total_processes = 0;
+    int running_processes = 0;
+
+
+};
+
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
@@ -89,10 +154,16 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() {
+    ProcStatParser prc;
+    return prc.total_processes;
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() {
+    ProcStatParser prc;
+    return prc.running_processes;
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
