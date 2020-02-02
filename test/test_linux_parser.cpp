@@ -40,7 +40,7 @@ TEST(t1, running_proceeses) {
     std::cout << RunningProcesses();
 }
 
-TEST(T1, get_cpu_utilization) {
+TEST(t1, get_cpu_utilization) {
     std::cout << CpuUtilization();
 }
 
@@ -54,8 +54,23 @@ TEST(t1, show_pids) {
     std::cout << std::endl;
 }
 
-TEST(T1,show_user){
+TEST(t1,show_user){
 
     std::cout <<"User with UID 1000: "<<LinuxParser::UserofUid(1000)<<std::endl;
+
+}
+
+TEST(t1,show_uid)
+{
+    std::vector<int> pids = LinuxParser::Pids();
+    std::string uid=LinuxParser::Uid(pids[0]);
+    std::cout << "Show UID:" << stoi(uid) << std::endl;
+}
+
+TEST(t1,get_username_of_process)
+{
+    std::vector<int> pids = LinuxParser::Pids();
+    std::string username=LinuxParser::User(pids[0]);
+    std::cout << "User of Process " << pids[0] << " is " << username << std::endl;
 
 }

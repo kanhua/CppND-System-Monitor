@@ -222,23 +222,22 @@ int LinuxParser::RunningProcesses() {
 /// Read UserName associated with a UID
 /// \param uid
 /// \return
-std::string LinuxParser::UserofUid(int uid){
+std::string LinuxParser::UserofUid(int uid) {
 
     string line;
-    const int cols=7;
+    const int cols = 7;
     std::ifstream filestream(LinuxParser::kPasswordPath);
     if (filestream.is_open()) {
         while (std::getline(filestream, line)) {
-            vector<string> tokens(cols,"");
+            vector<string> tokens(cols, "");
             string temp_token;
             std::istringstream linestream(line);
-            int index=0;
-            while(std::getline(linestream,temp_token,':')){
-                tokens[index]=temp_token;
+            int index = 0;
+            while (std::getline(linestream, temp_token, ':')) {
+                tokens[index] = temp_token;
                 index++;
             }
-            if (stoi(tokens[2])==uid)
-            {
+            if (stoi(tokens[2]) == uid) {
                 return tokens[0];
             }
 
@@ -254,15 +253,43 @@ string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Uid(int pid) {
+
+    string filename = LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kStatusFilename;
+    std::ifstream filestream(filename);
+    if (filestream.is_open()) {
+        string line;
+        while (std::getline(filestream, line)) {
+            std::istringstream linestream(line);
+            string token;
+            linestream >> token;
+            if (token == "Uid:") {
+                string uid;
+                linestream >> uid;
+                return uid;
+
+            } else {
+                continue;
+            }
+        }
+    }
+
+
+    return "UidNotFound";
+}
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) {
+
+    string uid=Uid(pid);
+    string username=UserofUid(stoi(uid));
+
+    return username; }
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
