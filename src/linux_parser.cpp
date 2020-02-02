@@ -129,7 +129,7 @@ public:
                         running_processes = stoi(value);
                         break;
                     } else if (key == "cpu") {
-                        for (int i = 0; i < cpu_col_num; i++) {
+                        for (size_t i = 0; i < cpu_col_num; i++) {
                             linestream >> value;
                             cpu_usage[i] = stoi(value);
                         }
@@ -159,8 +159,8 @@ public:
         int irq = cpu_usage[5];
         int softirq = cpu_usage[6];
         int steal = cpu_usage[7];
-        int guest = cpu_usage[8];
-        int guest_nice = cpu_usage[9];
+        //int guest = cpu_usage[8]; Not used for now
+        //int guest_nice = cpu_usage[9]; Not used for now
 
         Idle = idle + iowait;
         NonIdle = user + nice + system + irq + softirq + steal;
