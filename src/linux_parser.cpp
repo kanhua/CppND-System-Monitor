@@ -219,6 +219,35 @@ int LinuxParser::RunningProcesses() {
     return prc.running_processes;
 }
 
+/// Read UserName associated with a UID
+/// \param uid
+/// \return
+std::string LinuxParser::UserofUid(int uid){
+
+    string line;
+    const int cols=7;
+    std::ifstream filestream(LinuxParser::kPasswordPath);
+    if (filestream.is_open()) {
+        while (std::getline(filestream, line)) {
+            vector<string> tokens(cols,"");
+            string temp_token;
+            std::istringstream linestream(line);
+            int index=0;
+            while(std::getline(linestream,temp_token,':')){
+                tokens[index]=temp_token;
+                index++;
+            }
+            if (stoi(tokens[2])==uid)
+            {
+                return tokens[0];
+            }
+
+        }
+    }
+
+    return "UserNotFound";
+}
+
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }

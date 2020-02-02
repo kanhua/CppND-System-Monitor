@@ -53,3 +53,9 @@ TEST(t1, show_pids) {
     }
     std::cout << std::endl;
 }
+
+TEST(T1,show_user){
+
+    std::cout <<"User with UID 1000: "<<LinuxParser::UserofUid(1000)<<std::endl;
+
+}

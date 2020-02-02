@@ -14,6 +14,7 @@ using std::string;
 using std::vector;
 
 #include "linux_parser.h"
+
 using LinuxParser::Kernel;
 using LinuxParser::OperatingSystem;
 using LinuxParser::UpTime;
@@ -23,10 +24,19 @@ using LinuxParser::RunningProcesses;
 
 
 // TODO: Return the system's CPU
-Processor& System::Cpu() { return cpu_; }
+Processor &System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+vector<Process> &System::Processes() {
+    vector<int> all_pids = LinuxParser::Pids();
+    processes_={};
+    for (size_t i=0;i<all_pids.size();i++)
+    {
+        Process prc(all_pids[i]);
+        processes_.push_back(prc);
+    }
+    return processes_;
+}
 
 std::string System::Kernel() { return LinuxParser::Kernel(); }
 
