@@ -54,6 +54,8 @@ std::string Uid(int pid);
 std::string User(int pid);
 long int UpTime(int pid);
 std::string UserofUid(int uid);
+
+    std::string ReadColValueFromFile(const std::string &filename, std::string &column_name, const std::string &default_output);
 };  // namespace LinuxParser
 
 #endif
