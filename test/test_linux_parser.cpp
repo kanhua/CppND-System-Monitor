@@ -74,3 +74,10 @@ TEST(t1,get_username_of_process)
     std::cout << "User of Process " << pids[0] << " is " << username << std::endl;
 
 }
+
+TEST(t1,get_process_up_time)
+{
+
+    std::vector<int> pids = LinuxParser::Pids();
+    std::cout << "Up time of Process " << pids[0] << " is " << LinuxParser::UpTime(pids[0]) << std::endl;
+}
