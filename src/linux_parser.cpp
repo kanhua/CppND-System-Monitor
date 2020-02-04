@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <chrono>
+#include <thread>
+#include <tuple>
 
 #include "linux_parser.h"
 
@@ -191,8 +194,6 @@ long LinuxParser::IdleJiffies() { return 0; }
 // TODO: Read and return CPU utilization
 //vector<string> LinuxParser::CpuUtilization() { return {}; }
 
-#include <chrono>
-#include <thread>
 
 float LinuxParser::CpuUtilization() {
     ProcStatParser prev_prc;
@@ -251,17 +252,17 @@ std::string LinuxParser::UserofUid(int uid) {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) {
 
-    string filename=LinuxParser::kProcDirectory+to_string(pid)+LinuxParser::kCmdlineFilename;
+    string filename = LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kCmdlineFilename;
 
     std::ifstream filestream(filename);
-    string line="Cmd Not Found";
+    string line = "Cmd Not Found";
     if (filestream.is_open()) {
-        getline(filestream,line);
+        getline(filestream, line);
     }
 
 
-    return line; }
-
+    return line;
+}
 
 
 // TODO: Read and return the memory used by a process
@@ -321,21 +322,23 @@ string LinuxParser::User(int pid) {
     return username;
 }
 
+
+
+
+
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
 
-    string filename=LinuxParser::kProcDirectory+to_string(pid)+LinuxParser::kStatFilename;
+    string filename = LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kStatFilename;
     std::ifstream filestream(filename);
 
-    if (filestream.is_open())
-    {
+    if (filestream.is_open()) {
         string line;
-        getline(filestream,line);
+        getline(filestream, line);
         std::istringstream linestream(line);
-        string token="";
-        for (int i=0;i<22;i++)
-        {
+        string token = "";
+        for (int i = 0; i < 22; i++) {
             linestream >> token;
         }
         return stol(token);
@@ -343,4 +346,63 @@ long LinuxParser::UpTime(int pid) {
     }
 
     return 0;
+}
+
+
+LinuxParser::ProcPIDStatParser::ProcPIDStatParser(int pid)
+{
+    // The following formatter code is adapted from
+    // http://www.cs.tufts.edu/comp/111/assignments/a3/proc.c
+    string line;
+
+    string filename = LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kStatFilename;
+    std::ifstream filestream(filename);
+
+    const char *format = "%d %s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld %ld %ld %lu %lu %ld %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d %lu %lu %llu";
+
+    getline(filestream,line);
+    sscanf(line.c_str(), format,
+           &pid,
+           comm,
+           &state,
+           &ppid,
+           &pgrp,
+           &session,
+           &tty_nr,
+           &tpgid,
+           &flags,
+           &minflt,
+           &cminflt,
+           &majflt,
+           &cmajflt,
+           &utime,
+           &stime,
+           &cutime,
+           &cstime,
+           &priority,
+           &nice,
+           &num_threads,
+           &itrealvalue,
+           &starttime,
+           &vsize,
+           &rss,
+           &rlim,
+           &startcode,
+           &endcode,
+           &startstack,
+           &kstkesp,
+           &kstkeip,
+           &signal,
+           &blocked,
+           &sigignore,
+           &sigcatch,
+           &wchan,
+           &nswap,
+           &cnswap,
+           &exit_signal,
+           &processor,
+           &rt_priority,
+           &policy,
+           &delayacct_blkio_ticks
+    );
 }
