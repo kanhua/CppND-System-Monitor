@@ -323,34 +323,16 @@ string LinuxParser::User(int pid) {
 }
 
 
-
-
-
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
 
-    string filename = LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kStatFilename;
-    std::ifstream filestream(filename);
-
-    if (filestream.is_open()) {
-        string line;
-        getline(filestream, line);
-        std::istringstream linestream(line);
-        string token = "";
-        for (int i = 0; i < 22; i++) {
-            linestream >> token;
-        }
-        return stol(token);
-
-    }
-
-    return 0;
+    LinuxParser::ProcPIDStatParser ppsp(pid);
+    return ppsp.starttime;
 }
 
 
-LinuxParser::ProcPIDStatParser::ProcPIDStatParser(int pid)
-{
+LinuxParser::ProcPIDStatParser::ProcPIDStatParser(int pid) {
     // The following formatter code is adapted from
     // http://www.cs.tufts.edu/comp/111/assignments/a3/proc.c
     string line;
@@ -360,30 +342,30 @@ LinuxParser::ProcPIDStatParser::ProcPIDStatParser(int pid)
 
     const char *format = "%d %s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld %ld %ld %lu %lu %ld %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d %lu %lu %llu";
 
-    getline(filestream,line);
+    getline(filestream, line);
     sscanf(line.c_str(), format,
-           &pid,
+           &pid,        //1
            comm,
            &state,
            &ppid,
-           &pgrp,
+           &pgrp,       //5
            &session,
            &tty_nr,
            &tpgid,
            &flags,
-           &minflt,
+           &minflt,     //10
            &cminflt,
            &majflt,
            &cmajflt,
            &utime,
-           &stime,
+           &stime,      //15
            &cutime,
            &cstime,
            &priority,
            &nice,
-           &num_threads,
+           &num_threads,  //20
            &itrealvalue,
-           &starttime,
+           &starttime,    //22 Uptime
            &vsize,
            &rss,
            &rlim,
@@ -405,4 +387,6 @@ LinuxParser::ProcPIDStatParser::ProcPIDStatParser(int pid)
            &policy,
            &delayacct_blkio_ticks
     );
+    //TODO: raise error if sscanf return something wrong.
+
 }

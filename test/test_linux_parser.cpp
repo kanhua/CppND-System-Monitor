@@ -77,7 +77,8 @@ TEST(t1,get_username_of_process)
 
 TEST(t1,get_process_up_time)
 {
-
     std::vector<int> pids = LinuxParser::Pids();
     std::cout << "Up time of Process " << pids[0] << " is " << LinuxParser::UpTime(pids[0]) << std::endl;
+    LinuxParser::ProcPIDStatParser  ppsp(pids[0]);
+    std::cout << "Up time of Process " << pids[0] << " is " << ppsp.starttime << std::endl;
 }
