@@ -16,26 +16,33 @@ using std::vector;
 #include "linux_parser.h"
 
 using LinuxParser::Kernel;
-using LinuxParser::OperatingSystem;
-using LinuxParser::UpTime;
 using LinuxParser::MemoryUtilization;
-using LinuxParser::TotalProcesses;
+using LinuxParser::OperatingSystem;
 using LinuxParser::RunningProcesses;
-
+using LinuxParser::TotalProcesses;
+using LinuxParser::UpTime;
 
 // TODO: Return the system's CPU
 Processor &System::Cpu() { return cpu_; }
 
+bool compare_process_ram(Process &p1, Process &p2) {
+  if (stoi(p1.Ram()) > stoi(p2.Ram())) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // TODO: Return a container composed of the system's processes
 vector<Process> &System::Processes() {
-    vector<int> all_pids = LinuxParser::Pids();
-    processes_={};
-    for (size_t i=0;i<all_pids.size();i++)
-    {
-        Process prc(all_pids[i]);
-        processes_.push_back(prc);
-    }
-    return processes_;
+  vector<int> all_pids = LinuxParser::Pids();
+  processes_ = {};
+  for (size_t i = 0; i < all_pids.size(); i++) {
+    Process prc(all_pids[i]);
+    processes_.push_back(prc);
+  }
+  std::sort(processes_.begin(), processes_.end(), compare_process_ram);
+  return processes_;
 }
 
 std::string System::Kernel() { return LinuxParser::Kernel(); }

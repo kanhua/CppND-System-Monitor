@@ -9,10 +9,17 @@ using std::string;
 // OUTPUT: HH:MM:SS
 // REMOVE: [[maybe_unused]] once you define the function
 string Format::ElapsedTime(long seconds) {
-    int minutes=seconds/60;
-    int r_seconds=seconds%60;
+  long minutes = seconds / 60;
+  long r_seconds = seconds % 60;
 
-    int hours=minutes/60;
-    int r_mintues=minutes%60;
+  long hours = minutes / 60;
+  long r_mintues = minutes % 60;
 
-    return std::to_string(hours)+":"+std::to_string(r_mintues)+":"+std::to_string(r_seconds); }
+  if (hours > 99) hours = 99;
+
+  char buffer[20];
+  sprintf(buffer, "%02d:%02d:%02d", hours, r_mintues, r_seconds);
+  string output_string(buffer, 8);
+
+  return output_string;
+}
