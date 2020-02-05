@@ -41,7 +41,7 @@ string Process::Command() {
 // TODO: Return this process's memory utilization
 string Process::Ram() {
   string ram_str = LinuxParser::Ram(pid);
-  ram_mb = stoi(ram_str) / 1024;
+  int ram_mb = stoi(ram_str) / 1024;
 
   return to_string(ram_mb);
 }
