@@ -47,7 +47,6 @@ namespace LinuxParser {
         kGuestNice_
     };
 
-//std::vector<std::string> CpuUtilization(); //TODO delete this when refactoring
     float CpuUtilization();
 
     long Jiffies();

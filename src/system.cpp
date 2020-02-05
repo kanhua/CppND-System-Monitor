@@ -22,7 +22,6 @@ using LinuxParser::RunningProcesses;
 using LinuxParser::TotalProcesses;
 using LinuxParser::UpTime;
 
-// TODO: Return the system's CPU
 Processor &System::Cpu() { return cpu_; }
 
 bool compare_process_ram(Process &p1, Process &p2) {
@@ -33,7 +32,6 @@ bool compare_process_ram(Process &p1, Process &p2) {
   }
 }
 
-// TODO: Return a container composed of the system's processes
 vector<Process> &System::Processes() {
   vector<int> all_pids = LinuxParser::Pids();
   processes_ = {};
